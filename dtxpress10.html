@@ -1,0 +1,243 @@
+<html> 
+<!--
+/******************************************************************************/
+/******************************************************************************/
+/** This version uses indirect recursion as the most correct expression of   **/
+/** of the the algorithm to achieve repetition of  Iterables.                **/
+/** ------------------------------------------------------------------------ **/
+/** Version 10: removes the id stubbing and replaces with counted ids         **/    
+/******************************************************************************/
+/******************************************************************************/
+-->
+<head> 
+    <meta charset="UTF-8"/>
+    <!-- load some data -->
+   
+    <style>
+		td {border:solid gray 1px}
+		tbody:before {content:"<tbody>"}
+		tbody:after {content:"</tbody>"}
+	</style>
+	
+<script src="dtxpress10.js"></script>
+</script>
+
+</head>
+
+<body ondomcontentloaded="alert('Test6 Ready');" >
+ 
+<h1>Template Express v0.7</h1><hr/>
+<p>
+This update removes id stubbing and replaces with unique counters.
+</p>
+
+<h2> Iteration Controller </h2>
+<p>
+The Iteration controller allows multidemnsional arrays to be iterated in a controlled manner.
+Without an IterationController, a multidimensional array is rendered as a flattened (single dimension)
+list. This is so because each iterable object (array) is iterated when it is encountered:
+so if the 1st element in an array is also an array, the first element is iterated, then the second
+element of the top-level array is adressed and it too is iterated and so on recursively.
+</p>
+<p>
+To allow a multi-dimensional array to be rendered in a more controlled fashion, for example as
+a table with rows and columns, an IterationController instruction can be used. This takes the form of 
+{{iterationId:scopeObjectName}}. When an element 'id' attribute takes this form, the 
+IterationController function is activated.
+</p>
+<p>
+IterationController differs from simple iteration in that simple iteration will repeat any element 
+whos id matches an the name of an iterable object (an array) in the current scope, whereas an 
+IterationController will repeat the <u>elements enclosed by the element containing the IterationInstruction,
+but not the enclosing element itself. This makes it suitable for rendering a two- or multi-dimensional array as a table.</u>
+</p>
+<p>
+Note: It is recommended to use the iteration Controller on a tbody elements rather than the table element
+ - if used on the table the IterationController will create each row in its own tbody element, whereas if
+ the controller is on an explicit tbody in the template, all rows will occupy the same tbody element, 
+ making a neater table in the Document Object Model.
+</p>
+<h2>Class Name "dt-auto"</h3>
+<p>
+This class name added to a template causes the template to be elaborated in-place and on page load (actually, as soon as the DOM is available).
+The template is elaborated using whatever object matches the template's id attribute in the window scope - i.e. window[template.id]
+</p>
+
+<h2>Model Object DOM </h3>
+<p>
+This version also implements the modelObject.dom as as array of elements modelObject.dt$dom rather than a single DOM element. 
+An model object will be represented by more than one DOM element if it is rendered multiple times.
+This is a change from the initial prototype and earlier applications need to be aware of this change 
+as it is the only known source of incompatibility. </p>
+<h2> Things to be done </h2>
+<ul>
+<li> Test {{xxx:yyy}} with the dt-group-start/end feature.
+<li> Implement Binding.explicit=true (default==false) switch to require id attributes to have {{ }} wrapping in order
+to be mapped to scope variables - and to not handle ones that don't have this syntax </li>
+<li> Some IDs are still being replicated without being converted to unique ids - this is not a serious issue but does make the documents non-valid HTML
+</ul>
+
+<hr/>
+<script>
+    var formSet = {
+    "QUICKSEARCH": {
+        "groups": [
+            { "label":"Inpatient", "benefits":[ "AAA","BBB","CCC"]},
+            { "label":"Maternity", "benefits":[ "DDD","EEE","FFF"] },
+            { "label":"Radiology", "benefits":[ "GGG","HHH","III"] },
+            { "label":"Psychiatric", "benefits":[ "JJJ","KKK","LLL"] },
+            { "label":"Outpatient", "benefits":[ "MMM","NNN","OOO"] }            
+            ]
+        }
+    }
+	
+	var list_of_people =[
+		{"first_name":"Robin", "surname":"Banks"},
+		{"first_name":"Annette", "surname":"Curtin"},
+		{"first_name":"Richard", "surname":"Knobhead"}
+	];
+	
+	var myTable=[
+	["Row 0, Col 0","Row 0, Col 1","Row 0, Col 2"],
+	["Row 1, Col 0","Row 1, Col 1","Row 1, Col 2"],
+	["Row 2, Col 0","Row 2, Col 1","Row 2, Col 2"],
+	["Row 3, Col 0","Row 3, Col 1","Row 3, Col 2"]	
+	];
+	
+	var anotherTable=[
+	[   {"first_name":"Robin", "surname":"Banks"},
+		{"first_name":"Annette", "surname":"Curtin"},
+		{"first_name":"Richard", "surname":"Knobhead"}
+	],
+	[   {"first_name":"Robin", "surname":"Bastard"},
+		{"first_name":"Annette", "surname":"Fisher"},
+		{"first_name":"Richard", "surname":"Held"}
+	],
+	[   {"first_name":"Lynn", "surname":"Bastard"},
+		{"first_name":"Floral", "surname":"Curtin"},
+		{"first_name":"Hans", "surname":"Held"}
+	],
+	];
+	var test4=anotherTable;
+	var test5=anotherTable;
+	var test6=anotherTable;
+	
+</script>
+<h1>Test 1: Simple Iteration - no IterationController</h1>
+<template id="list_groups">
+    <div id="groups">{{label}}
+        <span id="index_container">#{{$index}}</span>  Benefits:  <span id="benefits" class="line_{{$index}}"> {{$index}} </span>
+    </div>
+</template> 
+<div id="test1"> </div>
+
+<h1>Test 2: Simple 1 level IterationController</h1>
+<template id="iterationControllerExample">
+    <!-- this is an iteration instruction: repeat this div for each element in list_of_people using the name 'person' for the element -->
+    <div id="{{person:list_of_people}}">
+	    <!-- expand this on the element 'person' -->
+        <span id="person">(#{{$index}}) First Name: {{first_name}} Surname: {{surname}}</span>
+    </div>
+</template>
+<div id="test2"> </div>
+<hr/>
+
+<h1>Test 3: 2 level IterationController</h1>
+<template id="iterationControllerExample2">
+    <h2>Test 3 iterates each row in a table </h2>
+    <table id="{{row:my_table}}"> 
+	    <!-- this is an iteration instruction: repeat this tr for each element in my_table using the name 'row' for the element -->
+        <tr id="{{col:row}}">
+            <td id="col" >[row$index={{row$index}},$index={{$index}}(==col$index{{col$index}}) ] </td>
+        </tr>
+	</table>
+</template>
+<div id="test3"> </div>
+
+<h1>Test 4: 2 level IterationController</h1>
+<!-- class dt-auto is a declarative means to instantiate templates -->
+<template id="test4" class="dt-auto">
+	<!--<div  id="another_table">{{$index}} {{first_name}} {{surname}} </div> -->
+    <h2>Test 4 iterates each row in a table and renders each cell separately</h2>
+	<table id="{{row:test4}}">	    
+	    <!-- this is an iteration instruction: repeat this tr for each element in my_table using the name 'row' for the element -->
+        <tr id="row" >
+		    <!-- row is iterable - so this expresses every element in row -->
+			<td id="col">
+				({{row$index}},{{row$index}}):
+             </td>
+             <td id="col">
+                First Name: {{first_name}}
+             </td>
+             <td id="col">
+                Surname: {{surname}}
+			</td>
+        </tr>
+	</table>
+</template> 
+
+<h1>Test 5: 2 level IterationController</h1>
+<!-- class dt-auto is a declarative means to instantiate templates -->
+<template id="test5" class="dt-auto">
+	<!--<div  id="another_table">{{$index}} {{first_name}} {{surname}} </div> -->
+	<table id="{{row:test5}}">	    
+	    <!-- this is an iteration instruction: repeat this tr for each element in my_table using the name 'row' for the element -->
+        <tr id="{{col:row}}">
+		    <!-- row is iterable - so this expresses every element in row -->
+			<td  id="col_in_3_parts" >
+				<span id="col_pt_1">[({{$index}}):</span><span id="col_pt_2"> First Name: {{first_name}}</span><span id="col_pt_2">Surname: {{surname}}]</span>
+            </td> 
+        </tr>
+	</table>
+</template> 
+
+<hr />
+
+<h1>Test 6: 2 level IterationController</h1>
+<!-- class dt-auto is a declarative means to instantiate templates -->
+<template id="test6" class="dt-auto">
+	<!--<div  id="another_table">{{$index}} {{first_name}} {{surname}} </div> -->
+	<table>
+        <tbody id="{{row:test6}}">	    
+			<!-- this is an iteration instruction: repeat this tr for each element in my_table using the name 'row' for the element -->
+			<tr id="{{col:row}}">
+				<!-- row is iterable - so this expresses every element in row -->
+				<td id="col_ix" >({{$index}})</td>
+				<td id="col_name"> First Name: {{first_name}}</td>
+				<td id="col_surname"> Surname: {{surname}}</td>
+				</td> 
+			</tr>
+		</tbody>
+	</table>
+</template> 
+
+<script>
+
+	// examples of expressing templates procedurally
+    function test_1(){
+		var addContent=new Binding( [ new StackFrame("frameId", formSet["QUICKSEARCH"])]).elaborateFragment(document.getElementById("list_groups").content);
+		console.log( addContent );
+		for(var x=0;x<addContent.length;x++) {
+			document.getElementById("test1").appendChild(addContent[x]);
+		}
+	}
+	
+	function test_2(){
+		addContent=new Binding( [ new StackFrame("frameId", {"list_of_people":list_of_people})]).elaborateFragment(document.getElementById("iterationControllerExample").content);
+		console.log( addContent );
+		for(var x=0;x<addContent.length;x++) { document.getElementById("test2").appendChild(addContent[x]);}
+	}
+	
+	function test_3(){
+		addContent=new Binding( [ new StackFrame("frameId", {"my_table":myTable})]).elaborateFragment(document.getElementById("iterationControllerExample2").content);
+		console.log( addContent );
+		for(var x=0;x<addContent.length;x++) {  document.getElementById("test3").appendChild(addContent[x]);}
+	}
+
+	// testing 
+    test_1();
+	test_2();
+	test_3(); 
+</script>
+</body>
+</html>
